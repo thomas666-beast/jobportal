@@ -62,35 +62,33 @@ onMounted(() => load(true))
 <template>
   <div class="space-y-6">
     <section class="text-center pt-6 pb-2">
-      <h1 class="text-3xl md:text-4xl font-semibold text-slate-900">
+      <h1 class="text-3xl md:text-4xl text-fg">
         Companies hiring now
       </h1>
-      <p class="mt-2 text-slate-600">
+      <p class="mt-2 text-fg-muted">
         {{ total }} {{ total === 1 ? 'company' : 'companies' }} on Job Portal
       </p>
     </section>
 
     <AppCard class="!rounded-2xl">
       <div class="relative">
-        <Search
-          class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"
-        />
+        <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-subtle pointer-events-none" />
         <input
           v-model="q"
           @input="debouncedLoad"
           type="text"
           placeholder="Search companies by name"
-          class="w-full rounded-lg border border-slate-300 pl-9 pr-3 py-2.5 text-sm
-                 placeholder:text-slate-400
-                 focus:outline-none focus:ring-2 focus:ring-primary-500"
+          class="w-full rounded-lg border border-border pl-9 pr-3 py-2.5 text-sm bg-surface text-fg
+                 placeholder:text-fg-subtle
+                 focus:outline-none focus:ring-2 focus:ring-primary"
         />
       </div>
     </AppCard>
 
-    <p v-if="loading && initialLoading" class="text-slate-600 text-center py-8">
+    <p v-if="loading && initialLoading" class="text-fg-muted text-center py-8">
       Loading companies…
     </p>
-    <p v-else-if="errorMsg" class="text-red-600 text-center">{{ errorMsg }}</p>
+    <p v-else-if="errorMsg" class="text-danger-fg text-center">{{ errorMsg }}</p>
 
     <AppCard v-else-if="companies.length === 0" :padded="false">
       <EmptyState
@@ -112,7 +110,7 @@ onMounted(() => load(true))
             <div class="flex-shrink-0">
               <div
                 v-if="c.logo_url"
-                class="w-14 h-14 rounded-xl border border-slate-200 overflow-hidden bg-white"
+                class="w-14 h-14 rounded-xl border border-border overflow-hidden bg-surface-muted"
               >
                 <img
                   :src="c.logo_url"
@@ -122,25 +120,25 @@ onMounted(() => load(true))
               </div>
               <div
                 v-else
-                class="w-14 h-14 rounded-xl bg-slate-100 flex items-center justify-center"
+                class="w-14 h-14 rounded-xl bg-surface-muted flex items-center justify-center"
               >
-                <Building2 class="w-7 h-7 text-slate-400" />
+                <Building2 class="w-7 h-7 text-fg-muted" />
               </div>
             </div>
 
             <div class="flex-1 min-w-0">
-              <h2 class="text-base font-semibold text-slate-900 truncate">
+              <h2 class="text-base text-fg truncate">
                 {{ c.name }}
               </h2>
               <div
                 v-if="c.location"
-                class="text-sm text-slate-600 mt-0.5 inline-flex items-center gap-1"
+                class="text-sm text-fg-muted mt-0.5 inline-flex items-center gap-1"
               >
                 <MapPin class="w-3.5 h-3.5" /> {{ c.location }}
               </div>
               <p
                 v-if="c.description"
-                class="text-sm text-slate-700 mt-2 line-clamp-2"
+                class="text-sm text-fg-muted mt-2 line-clamp-2"
               >
                 {{ c.description }}
               </p>

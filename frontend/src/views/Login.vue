@@ -16,20 +16,13 @@ const password = ref('')
 const loading = ref(false)
 const errorMsg = ref('')
 
-const canSubmit = computed(
-  () => email.value.trim() && password.value && !loading.value
-)
+const canSubmit = computed(() => email.value.trim() && password.value && !loading.value)
 
 async function handleSubmit() {
   errorMsg.value = ''
   loading.value = true
-
   try {
-    await auth.login({
-      email: email.value.trim(),
-      password: password.value
-    })
-
+    await auth.login({ email: email.value.trim(), password: password.value })
     const redirect = route.query.redirect
     router.push(typeof redirect === 'string' ? redirect : { name: 'dashboard' })
   } catch (err) {
@@ -41,72 +34,32 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <div class="max-w-md mx-auto py-8">
-    <div class="text-center mb-6">
-      <RouterLink
-        to="/browse"
-        class="inline-flex items-center gap-2 text-lg font-semibold text-slate-900"
-      >
+  <div class="max-w-md mx-auto py-12">
+    <div class="text-center mb-8">
+      <RouterLink to="/" class="inline-block text-2xl font-bold goth-heading text-fg">
         Job Portal
       </RouterLink>
-      <h1 class="mt-6 text-2xl font-semibold text-slate-900">Welcome back</h1>
-      <p class="mt-1 text-sm text-slate-600">Sign in to your account</p>
+      <h1 class="mt-6 text-3xl font-bold text-fg">Welcome back</h1>
+      <p class="mt-2 text-sm text-fg-muted">Sign in to your account</p>
     </div>
 
     <AppCard>
-      <form @submit.prevent="handleSubmit" class="space-y-4">
-        <AppInput
-          v-model="email"
-          type="email"
-          label="Email"
-          placeholder="you@example.com"
-          required
-          autocomplete="email"
-        />
-
+      <form @submit.prevent="handleSubmit" class="space-y-6">
+        <AppInput v-model="email" type="email" label="Email" placeholder="you@example.com" required autocomplete="email" />
         <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1">
-            Password
-          </label>
-          <PasswordInput
-            v-model="password"
-            placeholder="Your password"
-            required
-            :minlength="1"
-            :show-generate="false"
-          />
+          <label class="block text-sm font-bold text-fg-muted mb-2 uppercase tracking-wide">Password</label>
+          <PasswordInput v-model="password" placeholder="Your password" required :minlength="1" :show-generate="false" />
         </div>
-
-        <p v-if="errorMsg" class="text-sm text-red-600">{{ errorMsg }}</p>
-
-        <AppButton
-          type="submit"
-          :disabled="!canSubmit"
-          :loading="loading"
-          block
-          size="lg"
-        >
+        <p v-if="errorMsg" class="text-sm text-red-500">{{ errorMsg }}</p>
+        <AppButton type="submit" :disabled="!canSubmit" :loading="loading" block size="lg">
           {{ loading ? 'Logging in…' : 'Log in' }}
         </AppButton>
-        <div class="text-right">
-          <RouterLink
-            to="/forgot-password"
-            class="text-xs text-primary-600 hover:text-primary-700"
-          >
-            Forgot password?
-          </RouterLink>
-        </div>
       </form>
     </AppCard>
 
-    <p class="mt-6 text-sm text-center text-slate-600">
+    <p class="mt-8 text-sm text-center text-fg-muted">
       Don't have an account?
-      <RouterLink
-        to="/register"
-        class="text-primary-600 hover:text-primary-700 font-medium"
-      >
-        Register
-      </RouterLink>
+      <RouterLink to="/register" class="text-primary hover:text-white transition-colors font-bold">Register</RouterLink>
     </p>
   </div>
 </template>

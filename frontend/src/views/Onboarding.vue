@@ -17,7 +17,7 @@ async function pick(role) {
   loading.value = role
   try {
     await auth.completeOnboarding(role)
-    toast.success('You\'re all set!')
+    toast.success("You're all set!")
     router.push({ name: 'dashboard' })
   } catch (err) {
     errorMsg.value = err.message
@@ -28,77 +28,50 @@ async function pick(role) {
 </script>
 
 <template>
-  <div class="max-w-3xl mx-auto py-8">
-    <div class="text-center mb-8">
-      <h1 class="text-3xl font-semibold text-slate-900">
-        Welcome, {{ auth.user?.username }}
-      </h1>
-      <p class="mt-2 text-slate-600">How do you want to use Job Portal?</p>
+  <div class="max-w-3xl mx-auto py-12">
+    <div class="text-center mb-10">
+      <h1 class="text-4xl font-bold text-fg">Welcome, {{ auth.user?.username }}</h1>
+      <p class="mt-3 text-lg text-fg-muted">How do you want to use Job Portal?</p>
     </div>
 
-    <div class="grid md:grid-cols-2 gap-4">
+    <div class="grid md:grid-cols-2 gap-6">
       <button
         type="button"
         @click="pick('job_seeker')"
         :disabled="loading !== null"
-        class="group text-left p-6 bg-white rounded-xl border-2 border-slate-200
-               hover:border-primary-500 hover:shadow-sm
-               disabled:opacity-50 disabled:cursor-not-allowed
-               transition-all"
+        class="group text-left p-8 bg-surface border border-border-strong
+               hover:border-primary hover:-translate-y-1 transition-all duration-200
+               disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        <div
-          class="w-12 h-12 rounded-xl bg-primary-50 text-primary-600
-                 flex items-center justify-center mb-4
-                 group-hover:bg-primary-100 transition-colors"
-        >
-          <Search class="w-6 h-6" :stroke-width="2" />
+        <div class="w-14 h-14 border border-primary text-primary flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
+          <Search class="w-7 h-7" />
         </div>
-        <h2 class="text-lg font-semibold text-slate-900 mb-1">
-          I'm looking for a job
-        </h2>
-        <p class="text-sm text-slate-600">
-          Browse jobs, save favorites, and apply to positions.
-        </p>
-        <p v-if="loading === 'job_seeker'" class="text-xs text-primary-600 mt-3">
-          Setting up…
-        </p>
+        <h2 class="text-2xl font-bold text-fg mb-2">I'm looking for a job</h2>
+        <p class="text-sm text-fg-muted">Browse jobs, save favorites, and apply to positions.</p>
+        <p v-if="loading === 'job_seeker'" class="text-xs text-primary mt-4 font-bold uppercase tracking-widest animate-pulse">Setting up…</p>
       </button>
 
       <button
         type="button"
         @click="pick('employer')"
         :disabled="loading !== null"
-        class="group text-left p-6 bg-white rounded-xl border-2 border-slate-200
-               hover:border-emerald-500 hover:shadow-sm
-               disabled:opacity-50 disabled:cursor-not-allowed
-               transition-all"
+        class="group text-left p-8 bg-surface border border-border-strong
+               hover:border-primary hover:-translate-y-1 transition-all duration-200
+               disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        <div
-          class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600
-                 flex items-center justify-center mb-4
-                 group-hover:bg-emerald-100 transition-colors"
-        >
-          <Building2 class="w-6 h-6" :stroke-width="2" />
+        <div class="w-14 h-14 border border-primary text-primary flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
+          <Building2 class="w-7 h-7" />
         </div>
-        <h2 class="text-lg font-semibold text-slate-900 mb-1">
-          I'm hiring
-        </h2>
-        <p class="text-sm text-slate-600">
-          Post jobs, manage listings, and review applications.
-        </p>
-        <p v-if="loading === 'employer'" class="text-xs text-emerald-600 mt-3">
-          Setting up…
-        </p>
+        <h2 class="text-2xl font-bold text-fg mb-2">I'm hiring</h2>
+        <p class="text-sm text-fg-muted">Post jobs, manage listings, and review applications.</p>
+        <p v-if="loading === 'employer'" class="text-xs text-primary mt-4 font-bold uppercase tracking-widest animate-pulse">Setting up…</p>
       </button>
     </div>
 
-    <p v-if="errorMsg" class="mt-4 text-sm text-red-600 text-center">
-      {{ errorMsg }}
-    </p>
+    <p v-if="errorMsg" class="mt-6 text-sm text-red-500 text-center">{{ errorMsg }}</p>
 
-    <p class="mt-6 text-xs text-slate-500 text-center max-w-md mx-auto">
-      This choice is permanent for this account. If you need both roles,
-      register a second account with a different email.
+    <p class="mt-10 text-xs text-fg-subtle text-center max-w-md mx-auto uppercase tracking-wider">
+      This choice is permanent for this account. If you need both roles, register a second account with a different email.
     </p>
   </div>
 </template>

@@ -10,11 +10,10 @@ const props = defineProps({
 <template>
   <component
     :is="props.as"
-    class="bg-white rounded-xl border border-slate-200"
+    class="bg-surface border border-border"
     :class="[
       padded && 'p-6',
-      interactive && 'transition hover:border-slate-300 hover:shadow-sm cursor-pointer',
-      hover && 'transition hover:border-primary-300 hover:shadow-sm'
+      (interactive || hover) && 'transition-all duration-200 hover:border-primary'
     ]"
   >
     <slot />

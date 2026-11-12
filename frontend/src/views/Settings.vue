@@ -17,17 +17,10 @@ const confirmPassword = ref('')
 const saving = ref(false)
 const errorMsg = ref('')
 
-const passwordsMatch = computed(
-  () => !confirmPassword.value || newPassword.value === confirmPassword.value
-)
+const passwordsMatch = computed(() => !confirmPassword.value || newPassword.value === confirmPassword.value)
 
 const canSubmit = computed(
-  () =>
-    currentPassword.value &&
-    newPassword.value.length >= 8 &&
-    newPassword.value === confirmPassword.value &&
-    newPassword.value !== currentPassword.value &&
-    !saving.value
+  () => currentPassword.value && newPassword.value.length >= 8 && newPassword.value === confirmPassword.value && newPassword.value !== currentPassword.value && !saving.value
 )
 
 const roleBadge = computed(() => {
@@ -42,10 +35,7 @@ async function handleSubmit() {
   errorMsg.value = ''
   saving.value = true
   try {
-    await changePassword({
-      current_password: currentPassword.value,
-      new_password: newPassword.value
-    })
+    await changePassword({ current_password: currentPassword.value, new_password: newPassword.value })
     currentPassword.value = ''
     newPassword.value = ''
     confirmPassword.value = ''
@@ -61,81 +51,46 @@ async function handleSubmit() {
 <template>
   <div class="max-w-xl mx-auto space-y-6">
     <div>
-      <h1 class="text-2xl font-semibold text-slate-900">Settings</h1>
-      <p class="text-sm text-slate-600 mt-1">Manage your account</p>
+      <h1 class="text-3xl font-bold text-fg">Settings</h1>
+      <p class="text-sm text-fg-muted mt-2">Manage your account</p>
     </div>
 
     <AppCard>
       <div class="flex items-start justify-between gap-4">
         <div>
-          <p class="text-sm text-slate-500">Signed in as</p>
-          <p class="text-base font-medium text-slate-900 mt-0.5">
-            {{ auth.user?.username }}
-          </p>
+          <p class="text-sm text-fg-muted uppercase tracking-wider font-bold">Signed in as</p>
+          <p class="text-xl font-bold text-fg mt-1">{{ auth.user?.username }}</p>
         </div>
         <AppBadge :variant="roleBadge.variant">{{ roleBadge.label }}</AppBadge>
       </div>
     </AppCard>
 
     <AppCard>
-      <div class="mb-4">
-        <h2 class="text-base font-semibold text-slate-900">Change password</h2>
-        <p class="text-sm text-slate-600 mt-1">
-          You'll stay signed in on this device.
-        </p>
+      <div class="mb-6">
+        <h2 class="text-xl font-bold text-fg">Change password</h2>
+        <p class="text-sm text-fg-muted mt-1">You'll stay signed in on this device.</p>
       </div>
 
-      <form @submit.prevent="handleSubmit" class="space-y-4">
+      <form @submit.prevent="handleSubmit" class="space-y-6">
         <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1">
-            Current password
-          </label>
-          <PasswordInput
-            v-model="currentPassword"
-            placeholder="Your current password"
-            required
-            :minlength="1"
-            :show-generate="false"
-          />
+          <label class="block text-sm font-bold text-fg-muted mb-2 uppercase tracking-wide">Current password</label>
+          <PasswordInput v-model="currentPassword" placeholder="Your current password" required :minlength="1" :show-generate="false" />
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1">
-            New password
-          </label>
-          <PasswordInput
-            v-model="newPassword"
-            placeholder="At least 8 characters"
-            required
-            :minlength="8"
-            :show-generate="true"
-          />
+          <label class="block text-sm font-bold text-fg-muted mb-2 uppercase tracking-wide">New password</label>
+          <PasswordInput v-model="newPassword" placeholder="At least 8 characters" required :minlength="8" :show-generate="true" />
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1">
-            Confirm new password
-          </label>
-          <PasswordInput
-            v-model="confirmPassword"
-            placeholder="Repeat new password"
-            required
-            :minlength="8"
-            :show-generate="false"
-          />
-          <p v-if="!passwordsMatch" class="text-xs text-red-600 mt-1">
-            Passwords do not match.
-          </p>
+          <label class="block text-sm font-bold text-fg-muted mb-2 uppercase tracking-wide">Confirm new password</label>
+          <PasswordInput v-model="confirmPassword" placeholder="Repeat new password" required :minlength="8" :show-generate="false" />
+          <p v-if="!passwordsMatch" class="text-xs text-red-500 mt-2">Passwords do not match.</p>
         </div>
 
-        <p v-if="errorMsg" class="text-sm text-red-600">{{ errorMsg }}</p>
+        <p v-if="errorMsg" class="text-sm text-red-500">{{ errorMsg }}</p>
 
-        <AppButton
-          type="submit"
-          :disabled="!canSubmit"
-          :loading="saving"
-          block
-        >
+        <AppButton type="submit" :disabled="!canSubmit" :loading="saving" block size="lg">
           {{ saving ? 'Updating…' : 'Update password' }}
         </AppButton>
       </form>
