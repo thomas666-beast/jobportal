@@ -3,12 +3,13 @@ import { ref, onMounted, computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { Search, MapPin, Briefcase, Banknote, Building2, X } from 'lucide-vue-next'
 import { browseJobs } from '../api/publicJobs'
-import { timeAgo, formatSalary, remoteLabel, employmentLabel } from '../utils/jobStatus'
+import { formatSalary, remoteLabel, employmentLabel } from '../utils/jobStatus'
 import AppButton from '../components/ui/AppButton.vue'
 import AppBadge from '../components/ui/AppBadge.vue'
 import AppCard from '../components/ui/AppCard.vue'
 import EmptyState from '../components/ui/EmptyState.vue'
 import JobCardSkeleton from '../components/ui/JobCardSkeleton.vue'
+import SaveJobButton from '../components/SaveJobButton.vue'
 
 const q = ref('')
 const location = ref('')
@@ -90,7 +91,10 @@ onMounted(() => load(true))
                   <h2 class="text-xl font-bold text-fg">{{ job.title }}</h2>
                   <p class="text-sm text-fg-muted mt-1">{{ job.company.name }} <span v-if="job.company.location">· {{ job.company.location }}</span></p>
                 </div>
-                <AppBadge variant="neutral">{{ remoteLabel(job.remote_type) }}</AppBadge>
+                <div class="flex items-center gap-2">
+                  <AppBadge variant="neutral">{{ remoteLabel(job.remote_type) }}</AppBadge>
+                  <SaveJobButton :job-id="job.id" variant="icon" />
+                </div>
               </div>
               <p class="text-sm text-fg-muted mt-3 line-clamp-2">{{ job.description }}</p>
               <div class="flex flex-wrap gap-4 mt-4 text-xs text-fg-subtle">

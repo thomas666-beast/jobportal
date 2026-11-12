@@ -9,30 +9,18 @@ import AppCard from '../components/ui/AppCard.vue'
 import { useToast } from '../composables/useToast'
 
 const toast = useToast()
-
 const loading = ref(true)
 const saving = ref(false)
 const errorMsg = ref('')
 const isNew = ref(false)
 
-const form = ref({
-  name: '',
-  description: '',
-  website: '',
-  location: ''
-})
-
+const form = ref({ name: '', description: '', website: '', location: '' })
 const logoUrl = ref('')
 
 const canSubmit = computed(() => form.value.name.trim() && !saving.value)
 
 function applyCompany(c) {
-  form.value = {
-    name: c.name || '',
-    description: c.description || '',
-    website: c.website || '',
-    location: c.location || ''
-  }
+  form.value = { name: c.name || '', description: c.description || '', website: c.website || '', location: c.location || '' }
   logoUrl.value = c.logo_url || ''
 }
 
@@ -42,11 +30,8 @@ onMounted(async () => {
     applyCompany(c)
     isNew.value = false
   } catch (err) {
-    if (err.status === 404) {
-      isNew.value = true
-    } else {
-      errorMsg.value = err.message
-    }
+    if (err.status === 404) { isNew.value = true } 
+    else { errorMsg.value = err.message }
   } finally {
     loading.value = false
   }
@@ -56,10 +41,7 @@ async function handleSubmit() {
   errorMsg.value = ''
   saving.value = true
   try {
-    const c = await saveCompany({
-      ...form.value,
-      logo_url: logoUrl.value // preserve existing on save
-    })
+    const c = await saveCompany({ ...form.value, logo_url: logoUrl.value })
     applyCompany(c)
     isNew.value = false
     toast.success('Company saved.')
@@ -70,54 +52,30 @@ async function handleSubmit() {
   }
 }
 
-function onLogoUpdated(company) {
-  logoUrl.value = company.logo_url || ''
-}
+function onLogoUpdated(company) { logoUrl.value = company.logo_url || '' }
 </script>
 
 <template>
   <div class="max-w-2xl mx-auto space-y-6">
     <div>
-      <h1 class="text-2xl font-semibold text-slate-900">
-        {{ isNew ? 'Create your company' : 'Your company' }}
-      </h1>
-      <p class="text-sm text-slate-600 mt-1">
-        This is shown alongside every job you post.
-      </p>
+      <h1 class="text-3xl font-bold text-fg">{{ isNew ? 'Create your company' : 'Your company' }}</h1>
+      <p class="text-sm text-fg-muted mt-2">This is shown alongside every job you post.</p>
     </div>
 
-    <p v-if="loading" class="text-slate-600">Loading…</p>
+    <p v-if="loading" class="text-fg-muted">Loading…</p>
 
     <template v-else>
       <AppCard>
-        <form @submit.prevent="handleSubmit" class="space-y-4">
+        <form @submit.prevent="handleSubmit" class="space-y-6">
           <AppInput v-model="form.name" label="Company name" required :maxlength="200" />
+          <AppTextarea v-model="form.description" label="Description" :rows="5" :maxlength="5000" show-count />
 
-          <AppTextarea
-            v-model="form.description"
-            label="Description"
-            :rows="5"
-            :maxlength="5000"
-            show-count
-          />
-
-          <div class="grid md:grid-cols-2 gap-4">
-            <AppInput
-              v-model="form.website"
-              type="url"
-              label="Website"
-              placeholder="https://example.com"
-              :maxlength="255"
-            />
-            <AppInput
-              v-model="form.location"
-              label="Location"
-              placeholder="City or region"
-              :maxlength="120"
-            />
+          <div class="grid md:grid-cols-2 gap-6">
+            <AppInput v-model="form.website" type="url" label="Website" placeholder="https://example.com" :maxlength="255" />
+            <AppInput v-model="form.location" label="Location" placeholder="City or region" :maxlength="120" />
           </div>
 
-          <p v-if="errorMsg" class="text-sm text-red-600">{{ errorMsg }}</p>
+          <p v-if="errorMsg" class="text-sm text-red-500">{{ errorMsg }}</p>
 
           <div class="flex justify-end">
             <AppButton type="submit" :disabled="!canSubmit" :loading="saving" size="lg">
@@ -128,13 +86,10 @@ function onLogoUpdated(company) {
       </AppCard>
 
       <AppCard v-if="!isNew">
-        <div class="mb-3">
-          <h2 class="text-base font-semibold text-slate-900">Company logo</h2>
-          <p class="text-sm text-slate-600 mt-1">
-            Shown on every job listing and detail page.
-          </p>
+        <div class="mb-6">
+          <h2 class="text-xl font-bold text-fg">Company logo</h2>
+          <p class="text-sm text-fg-muted mt-1">Shown on every job listing and detail page.</p>
         </div>
-
         <LogoUpload :logo-url="logoUrl" @updated="onLogoUpdated" />
       </AppCard>
     </template>

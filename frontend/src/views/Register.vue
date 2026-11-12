@@ -28,17 +28,28 @@ const passwordStrength = computed(() => {
   if (/[0-9]/.test(p)) score++
   if (/[^A-Za-z0-9]/.test(p)) score++
   if (score <= 2) return { label: 'Weak', classes: 'bg-red-500', width: 'w-1/3' }
-  if (score === 3) return { label: 'Fair', classes: 'bg-yellow-500', width: 'w-2/3' }
+  if (score === 3) return { label: 'Fair', classes: 'bg-amber-500', width: 'w-2/3' }
   return { label: 'Strong', classes: 'bg-green-500', width: 'w-full' }
 })
 
-const canSubmit = computed(() => username.value.trim() && email.value.trim() && password.value.length >= 8 && !loading.value)
+const canSubmit = computed(
+  () =>
+    username.value.trim() &&
+    email.value.trim() &&
+    password.value.length >= 8 &&
+    !loading.value
+)
 
 async function handleSubmit() {
   errorMsg.value = ''
   loading.value = true
+
   try {
-    await auth.register({ username: username.value.trim(), email: email.value.trim(), password: password.value })
+    await auth.register({
+      username: username.value.trim(),
+      email: email.value.trim(),
+      password: password.value
+    })
     toast.success('Account created. Redirecting to login…')
     setTimeout(() => router.push({ name: 'login' }), 800)
   } catch (err) {
@@ -61,26 +72,56 @@ async function handleSubmit() {
 
     <AppCard>
       <form @submit.prevent="handleSubmit" class="space-y-6">
-        <AppInput v-model="username" label="Username" placeholder="yourname" required autocomplete="username" />
-        <AppInput v-model="email" type="email" label="Email" placeholder="you@example.com" required autocomplete="email" />
-        
+        <AppInput
+          v-model="username"
+          label="Username"
+          placeholder="yourname"
+          required
+          autocomplete="username"
+        />
+
+        <AppInput
+          v-model="email"
+          type="email"
+          label="Email"
+          placeholder="you@example.com"
+          required
+          autocomplete="email"
+        />
+
         <div>
-          <label class="block text-sm font-bold text-fg-muted mb-2 uppercase tracking-wide">
+          <label class="block text-sm font-bold text-fg-muted uppercase tracking-wide mb-2">
             Password <span class="text-primary">*</span>
           </label>
-          <PasswordInput v-model="password" placeholder="At least 8 characters" required :minlength="8" />
+          <PasswordInput
+            v-model="password"
+            placeholder="At least 8 characters"
+            required
+            :minlength="8"
+          />
           
           <div v-if="passwordStrength" class="mt-3">
             <div class="h-1 w-full bg-surface-muted overflow-hidden">
-              <div class="h-full transition-all" :class="[passwordStrength.classes, passwordStrength.width]" />
+              <div
+                class="h-full transition-all"
+                :class="[passwordStrength.classes, passwordStrength.width]"
+              />
             </div>
-            <p class="text-xs text-fg-subtle mt-2">Strength: {{ passwordStrength.label }}</p>
+            <p class="text-xs text-fg-subtle mt-2 uppercase tracking-wider">
+              Strength: {{ passwordStrength.label }}
+            </p>
           </div>
         </div>
 
         <p v-if="errorMsg" class="text-sm text-red-500">{{ errorMsg }}</p>
 
-        <AppButton type="submit" :disabled="!canSubmit" :loading="loading" block size="lg">
+        <AppButton
+          type="submit"
+          :disabled="!canSubmit"
+          :loading="loading"
+          block
+          size="lg"
+        >
           {{ loading ? 'Creating…' : 'Create account' }}
         </AppButton>
       </form>
@@ -88,7 +129,12 @@ async function handleSubmit() {
 
     <p class="mt-8 text-sm text-center text-fg-muted">
       Already have an account?
-      <RouterLink to="/login" class="text-primary hover:text-white transition-colors font-bold">Log in</RouterLink>
+      <RouterLink
+        to="/login"
+        class="text-primary hover:text-primary-hover font-bold transition-colors"
+      >
+        Log in
+      </RouterLink>
     </p>
   </div>
 </template>

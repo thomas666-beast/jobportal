@@ -15,14 +15,7 @@ const saving = ref(false)
 const errorMsg = ref('')
 const isNew = ref(false)
 
-const form = ref({
-  full_name: '',
-  phone: '',
-  location: '',
-  headline: '',
-  bio: ''
-})
-
+const form = ref({ full_name: '', phone: '', location: '', headline: '', bio: '' })
 const resumeUrl = ref('')
 const resumeFilename = ref('')
 const resumeUploadedAt = ref('')
@@ -48,11 +41,8 @@ onMounted(async () => {
     applyProfile(p)
     isNew.value = false
   } catch (err) {
-    if (err.status === 404) {
-      isNew.value = true
-    } else {
-      errorMsg.value = err.message
-    }
+    if (err.status === 404) { isNew.value = true } 
+    else { errorMsg.value = err.message }
   } finally {
     loading.value = false
   }
@@ -73,42 +63,34 @@ async function handleSubmit() {
   }
 }
 
-function onResumeUpdated(p) {
-  applyProfile(p)
-}
+function onResumeUpdated(p) { applyProfile(p) }
 </script>
 
 <template>
   <div class="max-w-2xl mx-auto space-y-6">
     <div>
-      <h1 class="text-2xl font-semibold text-slate-900">
+      <h1 class="text-3xl font-bold text-fg">
         {{ isNew ? 'Create your profile' : 'Your profile' }}
       </h1>
-      <p class="text-sm text-slate-600 mt-1">
-        Employers will see this when you apply to their jobs.
-      </p>
+      <p class="text-sm text-fg-muted mt-2">Employers will see this when you apply to their jobs.</p>
     </div>
 
-    <p v-if="loading" class="text-slate-600">Loading…</p>
+    <p v-if="loading" class="text-fg-muted">Loading…</p>
 
     <template v-else>
       <AppCard>
-        <form @submit.prevent="handleSubmit" class="space-y-4">
+        <form @submit.prevent="handleSubmit" class="space-y-6">
           <AppInput v-model="form.full_name" label="Full name" required :maxlength="120" />
-          <AppInput
-            v-model="form.headline"
-            label="Headline"
-            placeholder="e.g. Backend Go developer"
-            :maxlength="120"
-            hint="A short tagline employers see first"
-          />
-          <div class="grid md:grid-cols-2 gap-4">
+          <AppInput v-model="form.headline" label="Headline" placeholder="e.g. Backend Go developer" :maxlength="120" hint="A short tagline employers see first" />
+          
+          <div class="grid md:grid-cols-2 gap-6">
             <AppInput v-model="form.phone" type="tel" label="Phone" :maxlength="32" />
             <AppInput v-model="form.location" label="Location" placeholder="City or region" :maxlength="120" />
           </div>
+          
           <AppTextarea v-model="form.bio" label="Bio" :rows="6" :maxlength="2000" show-count />
 
-          <p v-if="errorMsg" class="text-sm text-red-600">{{ errorMsg }}</p>
+          <p v-if="errorMsg" class="text-sm text-red-500">{{ errorMsg }}</p>
 
           <div class="flex justify-end">
             <AppButton type="submit" :disabled="!canSubmit" :loading="saving" size="lg">
@@ -119,19 +101,11 @@ function onResumeUpdated(p) {
       </AppCard>
 
       <AppCard v-if="!isNew">
-        <div class="mb-3">
-          <h2 class="text-base font-semibold text-slate-900">Resume</h2>
-          <p class="text-sm text-slate-600 mt-1">
-            Employers see this when you apply to jobs.
-          </p>
+        <div class="mb-6">
+          <h2 class="text-xl font-bold text-fg">Resume</h2>
+          <p class="text-sm text-fg-muted mt-1">Employers see this when you apply to jobs.</p>
         </div>
-
-        <ResumeUpload
-          :resume-url="resumeUrl"
-          :resume-filename="resumeFilename"
-          :resume-uploaded-at="resumeUploadedAt"
-          @updated="onResumeUpdated"
-        />
+        <ResumeUpload :resume-url="resumeUrl" :resume-filename="resumeFilename" :resume-uploaded-at="resumeUploadedAt" @updated="onResumeUpdated" />
       </AppCard>
     </template>
   </div>

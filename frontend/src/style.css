@@ -5,41 +5,165 @@
 @import "@fontsource/cinzel/600.css";
 @import "@fontsource/cinzel/700.css";
 
-@theme {
-  --color-bg: #050505;
-  --color-surface: #121212;
-  --color-surface-muted: #1f1f1f;
-  --color-border: #333333;
-  --color-border-strong: #555555;
-  --color-fg: #ffffff;
-  --color-fg-muted: #a3a3a3;
-  --color-primary: #dc2626;
-  --color-primary-hover: #ef4444;
-  --font-sans: "Inter", sans-serif;
-  --font-serif: "Cinzel", Georgia, serif;
+/* ============================================================
+   THEME TOKENS
+   ============================================================ */
+
+:root,
+[data-theme="light"] {
+  --color-bg: #f8fafc;
+  --color-bg-secondary: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f1f5f9;
+
+  --color-border: #e2e8f0;
+  --color-border-strong: #cbd5e1;
+
+  --color-fg: #0f172a;
+  --color-fg-muted: #64748b;
+  --color-fg-subtle: #94a3b8;
+
+  --color-primary: #4f46e5;
+  --color-primary-hover: #4338ca;
+  --color-primary-fg: #ffffff;
+  --color-primary-soft: #eef2ff;
+  --color-primary-soft-fg: #4338ca;
+
+  --color-success: #10b981;
+  --color-success-soft: #ecfdf5;
+  --color-success-fg: #047857;
+
+  --color-warning: #f59e0b;
+  --color-warning-soft: #fffbeb;
+  --color-warning-fg: #b45309;
+
+  --color-danger: #ef4444;
+  --color-danger-soft: #fef2f2;
+  --color-danger-fg: #b91c1c;
+
+  --color-info: #3b82f6;
+  --color-info-soft: #eff6ff;
+  --color-info-fg: #1d4ed8;
+
+  --radius-sm: 4px;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --font-heading: "Inter", sans-serif;
 }
 
+[data-theme="goth"] {
+  --color-bg: #050505;
+  --color-bg-secondary: #121212;
+  --color-surface: #121212;
+  --color-surface-muted: #1f1f1f;
+
+  --color-border: #333333;
+  --color-border-strong: #555555;
+
+  --color-fg: #ffffff;
+  --color-fg-muted: #a3a3a3;
+  --color-fg-subtle: #737373;
+
+  --color-primary: #dc2626;
+  --color-primary-hover: #ef4444;
+  --color-primary-fg: #ffffff;
+  --color-primary-soft: #450a0a;
+  --color-primary-soft-fg: #fca5a5;
+
+  --color-success: #10b981;
+  --color-success-soft: #064e3b;
+  --color-success-fg: #6ee7b7;
+
+  --color-warning: #f59e0b;
+  --color-warning-soft: #78350f;
+  --color-warning-fg: #fcd34d;
+
+  --color-danger: #ef4444;
+  --color-danger-soft: #450a0a;
+  --color-danger-fg: #fca5a5;
+
+  --color-info: #3b82f6;
+  --color-info-soft: #0c1a2e;
+  --color-info-fg: #93c5fd;
+
+  --radius-sm: 0px;
+  --radius: 0px;
+  --radius-lg: 0px;
+  --font-heading: "Cinzel", Georgia, serif;
+}
+
+/* Map to Tailwind */
+@theme {
+  --font-sans: "Inter", sans-serif;
+  --color-bg: var(--color-bg);
+  --color-bg-secondary: var(--color-bg-secondary);
+  --color-surface: var(--color-surface);
+  --color-surface-muted: var(--color-surface-muted);
+  --color-border: var(--color-border);
+  --color-border-strong: var(--color-border-strong);
+  --color-fg: var(--color-fg);
+  --color-fg-muted: var(--color-fg-muted);
+  --color-fg-subtle: var(--color-fg-subtle);
+  --color-primary: var(--color-primary);
+  --color-primary-hover: var(--color-primary-hover);
+  --color-primary-fg: var(--color-primary-fg);
+  --color-primary-soft: var(--color-primary-soft);
+  --color-primary-soft-fg: var(--color-primary-soft-fg);
+  --color-success: var(--color-success);
+  --color-success-soft: var(--color-success-soft);
+  --color-success-fg: var(--color-success-fg);
+  --color-warning: var(--color-warning);
+  --color-warning-soft: var(--color-warning-soft);
+  --color-warning-fg: var(--color-warning-fg);
+  --color-danger: var(--color-danger);
+  --color-danger-soft: var(--color-danger-soft);
+  --color-danger-fg: var(--color-danger-fg);
+  --color-info: var(--color-info);
+  --color-info-soft: var(--color-info-soft);
+  --color-info-fg: var(--color-info-fg);
+}
+
+/* ============================================================
+   BASE STYLES
+   ============================================================ */
+
 html, body {
-  background-color: #050505;
-  color: #ffffff;
+  background-color: var(--color-bg);
+  color: var(--color-fg);
   margin: 0;
   min-height: 100vh;
+  font-family: var(--font-sans);
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 h1, h2, h3, h4 {
-  font-family: var(--font-serif);
-  text-transform: uppercase;
+  font-family: var(--font-heading);
   font-weight: 600;
+  color: var(--color-fg);
+}
+
+[data-theme="goth"] h1,
+[data-theme="goth"] h2,
+[data-theme="goth"] h3,
+[data-theme="goth"] h4 {
+  text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
+/* Force inputs to match theme */
 input, textarea, select {
+  border-radius: var(--radius) !important;
   background-color: var(--color-bg) !important;
-  border: 1px solid var(--color-border) !important;
+  border: 1px solid var(--color-border-strong) !important;
   color: var(--color-fg) !important;
-  border-radius: 0 !important;
 }
 input:focus, textarea:focus, select:focus {
   border-color: var(--color-primary) !important;
   outline: none !important;
 }
+
+/* Custom scrollbar for goth */
+[data-theme="goth"] ::-webkit-scrollbar { width: 8px; }
+[data-theme="goth"] ::-webkit-scrollbar-track { background: #000000; }
+[data-theme="goth"] ::-webkit-scrollbar-thumb { background: #333333; }
+[data-theme="goth"] ::-webkit-scrollbar-thumb:hover { background: #dc2626; }

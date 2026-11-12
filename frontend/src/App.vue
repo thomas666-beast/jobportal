@@ -9,6 +9,7 @@ import UserMenu from './components/UserMenu.vue'
 import NotificationBell from './components/NotificationBell.vue'
 import ToastContainer from './components/ui/ToastContainer.vue'
 import EmailVerificationBanner from './components/EmailVerificationBanner.vue'
+import ThemeToggle from './components/ThemeToggle.vue'
 
 const auth = useAuthStore()
 const notifications = useNotificationsStore()
@@ -48,6 +49,7 @@ function handleLogout() {
         </div>
 
         <div class="hidden md:flex items-center gap-4 text-sm">
+          <ThemeToggle />
           <template v-if="auth.isAuthenticated">
             <NotificationBell />
             <UserMenu />
