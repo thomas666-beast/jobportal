@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/labstack/echo/v4"
 
@@ -11,27 +10,22 @@ import (
 
 const ContextKeyUser = "user"
 
+// JWTAuth reads the access token from the httpOnly cookie (not the
+// Authorization header anymore). Sets claims in the context.
 func JWTAuth(jwtSvc *service.JWTService) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			header := c.Request().Header.Get("Authorization")
-			if header == "" {
+			cookie, err := c.Cookie(service.AccessCookieName)
+			if err != nil || cookie.Value == "" {
 				return c.JSON(http.StatusUnauthorized, map[string]string{
-					"error": "missing authorization header",
+					"error": "not authenticated",
 				})
 			}
 
-			parts := strings.SplitN(header, " ", 2)
-			if len(parts) != 2 || !strings.EqualFold(parts[0], "Bearer") {
-				return c.JSON(http.StatusUnauthorized, map[string]string{
-					"error": "invalid authorization header format",
-				})
-			}
-
-			claims, err := jwtSvc.Parse(parts[1])
+			claims, err := jwtSvc.Parse(cookie.Value)
 			if err != nil {
 				return c.JSON(http.StatusUnauthorized, map[string]string{
-					"error": "invalid or expired token",
+					"error": "invalid or expired session",
 				})
 			}
 

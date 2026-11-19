@@ -1,5 +1,6 @@
 <script setup>
 import { ref, watch, computed } from 'vue'
+import { onMounted, onUnmounted } from 'vue'
 import { RouterView, RouterLink, useRoute, useRouter } from 'vue-router'
 import { Menu, X } from 'lucide-vue-next'
 import { useAuthStore } from './stores/auth'
@@ -25,12 +26,20 @@ watch(() => auth.isAuthenticated, (authed) => {
   else notifications.stopPolling()
 }, { immediate: true })
 
-function handleLogout() {
+function handleUnauthorized() {
   auth.logout()
+  router.push({ name: 'login' })
+}
+
+async function handleLogout() {
+  await auth.logout()
   notifications.reset()
   menuOpen.value = false
   router.push({ name: 'login' })
 }
+
+onMounted(() => window.addEventListener('auth:unauthorized', handleUnauthorized))
+onUnmounted(() => window.removeEventListener('auth:unauthorized', handleUnauthorized))
 </script>
 
 <template>

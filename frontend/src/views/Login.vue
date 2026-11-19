@@ -23,13 +23,8 @@ const canSubmit = computed(
 async function handleSubmit() {
   errorMsg.value = ''
   loading.value = true
-
   try {
-    await auth.login({
-      email: email.value.trim(),
-      password: password.value
-    })
-
+    await auth.login({ email: email.value.trim(), password: password.value })
     const redirect = route.query.redirect
     router.push(typeof redirect === 'string' ? redirect : { name: 'dashboard' })
   } catch (err) {

@@ -6,18 +6,17 @@ import (
 	"os"
 	"strings"
 	"time"
-	"fmt"
-	
+
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	echomw "github.com/labstack/echo/v4/middleware"
 	"golang.org/x/time/rate"
 
-	"job-portal/internal/logger"
 	"job-portal/internal/db"
 	"job-portal/internal/db/dbgen"
 	"job-portal/internal/email"
 	"job-portal/internal/handler"
+	"job-portal/internal/logger"
 	appmw "job-portal/internal/middleware"
 	"job-portal/internal/service"
 	"job-portal/internal/storage"
@@ -39,26 +38,26 @@ func main() {
 	pool, err := db.NewPool(ctx)
 	if err != nil {
 		slog.Error("db connection failed", "error", err)
+		os.Exit(1)
 	}
 	defer pool.Close()
+
+	queries := dbgen.New(pool)
+	jwtSvc := service.NewJWTService()
+	refreshSvc := service.NewRefreshTokenService(queries)
+	authTokens := service.NewAuthTokenService(queries)
+	emailSender := email.NewSender()
+	notificationSvc := service.NewNotificationService(queries)
 
 	appName := os.Getenv("APP_NAME")
 	if appName == "" {
 		appName = "Job Portal"
 	}
-
-	queries := dbgen.New(pool)
-	jwtSvc := service.NewJWTService()
-	authTokens := service.NewAuthTokenService(queries)
-	emailSender := email.NewSender()
-	notificationSvc := service.NewNotificationService(queries)
-
 	appBaseURL := os.Getenv("APP_BASE_URL")
 	if appBaseURL == "" {
 		appBaseURL = "http://localhost:5173"
-		slog.Info("APP_BASE_URL not set, defaulting to http://localhost:5173")
+		slog.Warn("APP_BASE_URL not set, defaulting to localhost")
 	}
-
 	uploadsDir := os.Getenv("UPLOADS_DIR")
 	if uploadsDir == "" {
 		uploadsDir = "./uploads"
@@ -66,95 +65,81 @@ func main() {
 
 	fileStorage, err := storage.NewLocalStorage(uploadsDir, "/uploads")
 	if err != nil {
-		slog.Error(fmt.Sprintf("storage init failed: %v", err))
+		slog.Error("storage init failed", "error", err)
+		os.Exit(1)
 	}
 
+	// Background cleanup of expired tokens every hour.
+	go func() {
+		ticker := time.NewTicker(time.Hour)
+		defer ticker.Stop()
+		for range ticker.C {
+			_ = queries.DeleteExpiredRefreshTokens(ctx)
+			_ = queries.DeleteExpiredTokens(ctx)
+		}
+	}()
+
 	// Handlers
-	authHandler := handler.NewAuthHandler(queries, jwtSvc, authTokens, emailSender, appBaseURL, appName)
+	authHandler := handler.NewAuthHandler(queries, jwtSvc, refreshSvc, authTokens, emailSender, appBaseURL, appName)
 	authVerificationHandler := handler.NewAuthVerificationHandler(queries, authTokens, emailSender, appBaseURL, appName)
 	authPasswordHandler := handler.NewAuthPasswordHandler(queries, authTokens, emailSender, appBaseURL, appName)
+	meHandler := handler.NewMeHandler(queries, refreshSvc)
 	seekerProfileHandler := handler.NewSeekerProfileHandler(queries)
 	seekerResumeHandler := handler.NewSeekerResumeHandler(queries, fileStorage)
 	seekerAppsHandler := handler.NewSeekerApplicationsHandler(queries, notificationSvc)
 	seekerSavedJobsHandler := handler.NewSavedJobsHandler(queries)
 	seekerSavedSearchesHandler := handler.NewSavedSearchesHandler(queries)
-
 	companyHandler := handler.NewCompanyHandler(queries)
 	companyLogoHandler := handler.NewCompanyLogoHandler(queries, fileStorage)
 	jobsHandler := handler.NewJobsHandler(queries)
 	employerAppsHandler := handler.NewEmployerApplicationsHandler(queries, notificationSvc)
-
 	adminStatsHandler := handler.NewAdminStatsHandler(queries)
 	adminUsersHandler := handler.NewAdminUsersHandler(queries)
 	adminJobsHandler := handler.NewAdminJobsHandler(queries, notificationSvc)
 	adminAppsHandler := handler.NewAdminApplicationsHandler(queries)
-
 	publicJobsHandler := handler.NewPublicJobsHandler(queries)
 	publicCompaniesHandler := handler.NewPublicCompaniesHandler(queries)
-
 	notificationsHandler := handler.NewNotificationsHandler(queries)
-	meHandler := handler.NewMeHandler(queries)
 
 	// Rate limiters
-	registerLimiter := appmw.NewIPRateLimiter(appmw.Limit{
-		Rate:  rate.Every(10 * time.Second),
-		Burst: 5,
-		TTL:   10 * time.Minute,
-	})
-	loginLimiter := appmw.NewIPRateLimiter(appmw.Limit{
-		Rate:  rate.Every(2 * time.Second),
-		Burst: 10,
-		TTL:   10 * time.Minute,
-	})
-	forgotLimiter := appmw.NewIPRateLimiter(appmw.Limit{
-		Rate:  rate.Every(5 * time.Minute),
-		Burst: 3,
-		TTL:   15 * time.Minute,
-	})
-	resendLimiter := appmw.NewIPRateLimiter(appmw.Limit{
-		Rate:  rate.Every(20 * time.Minute),
-		Burst: 3,
-		TTL:   1 * time.Hour,
-	})
-	uploadLimiter := appmw.NewIPRateLimiter(appmw.Limit{
-		Rate:  rate.Every(6 * time.Second), // 1 upload per 6s sustained
-		Burst: 10,                           // up to 10 immediately
-		TTL:   10 * time.Minute,
-	})
+	registerLimiter := appmw.NewIPRateLimiter(appmw.Limit{Rate: rate.Every(10 * time.Second), Burst: 5, TTL: 10 * time.Minute})
+	loginLimiter := appmw.NewIPRateLimiter(appmw.Limit{Rate: rate.Every(2 * time.Second), Burst: 10, TTL: 10 * time.Minute})
+	forgotLimiter := appmw.NewIPRateLimiter(appmw.Limit{Rate: rate.Every(5 * time.Minute), Burst: 3, TTL: 15 * time.Minute})
+	resendLimiter := appmw.NewIPRateLimiter(appmw.Limit{Rate: rate.Every(20 * time.Minute), Burst: 3, TTL: 1 * time.Hour})
+	uploadLimiter := appmw.NewIPRateLimiter(appmw.Limit{Rate: rate.Every(6 * time.Second), Burst: 10, TTL: 10 * time.Minute})
 
 	// Echo
 	e := echo.New()
 	e.Use(appmw.RequestLogger())
 	e.Use(echomw.Recover())
 
-	// CORS — read allowed origins from env, fall back to localhost:5173.
 	originsRaw := os.Getenv("CORS_ORIGINS")
 	if originsRaw == "" {
 		originsRaw = "http://localhost:5173"
 	}
 	allowedOrigins := make([]string, 0)
 	for _, o := range strings.Split(originsRaw, ",") {
-		o = strings.TrimSpace(o)
-		if o != "" {
+		if o = strings.TrimSpace(o); o != "" {
 			allowedOrigins = append(allowedOrigins, o)
 		}
 	}
-	slog.Info(fmt.Sprintf("CORS allowed origins: %v", allowedOrigins))
+	slog.Info("CORS configured", "origins", allowedOrigins)
 
 	e.Use(echomw.CORSWithConfig(echomw.CORSConfig{
-		AllowOrigins: allowedOrigins,
-		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders: []string{"Content-Type", "Authorization"},
+		AllowOrigins:     allowedOrigins,
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Content-Type", "X-CSRF-Token"},
+		AllowCredentials: true, // ← critical for cookies
 	}))
 
-	// Static uploads
 	e.Static("/uploads", uploadsDir)
 
-	// Public API
 	api := e.Group("/api")
 
 	api.POST("/register", authHandler.Register, registerLimiter.Middleware())
 	api.POST("/login", authHandler.Login, loginLimiter.Middleware())
+	api.POST("/auth/logout", authHandler.Logout)
+	api.POST("/auth/refresh", authHandler.Refresh)
 
 	api.POST("/auth/verify-email", authVerificationHandler.VerifyEmail)
 	api.POST("/auth/forgot-password", authPasswordHandler.ForgotPassword, forgotLimiter.Middleware())
@@ -165,8 +150,8 @@ func main() {
 	api.GET("/companies", publicCompaniesHandler.List)
 	api.GET("/companies/:id", publicCompaniesHandler.Detail)
 
-	// Protected (any authenticated user)
-	protected := api.Group("", appmw.JWTAuth(jwtSvc))
+	// Protected (auth + CSRF for state-changing methods)
+	protected := api.Group("", appmw.JWTAuth(jwtSvc), appmw.CSRFProtect())
 	protected.GET("/me", authHandler.Me)
 	protected.POST("/me/password", meHandler.ChangePassword)
 	protected.POST("/onboarding/role", authHandler.OnboardingRole)
@@ -178,7 +163,6 @@ func main() {
 	protected.POST("/notifications/read-all", notificationsHandler.MarkAllRead)
 	protected.POST("/notifications/:id/read", notificationsHandler.MarkRead)
 
-	// Seeker-only
 	seekerOnly := protected.Group("/seeker", appmw.RequireRole("job_seeker"))
 	seekerOnly.GET("/profile", seekerProfileHandler.Get)
 	seekerOnly.PUT("/profile", seekerProfileHandler.Upsert)
@@ -196,7 +180,6 @@ func main() {
 	seekerOnly.GET("/saved-searches", seekerSavedSearchesHandler.List)
 	seekerOnly.DELETE("/saved-searches/:id", seekerSavedSearchesHandler.Delete)
 
-	// Employer-only
 	employerOnly := protected.Group("/employer", appmw.RequireRole("employer"))
 	employerOnly.GET("/company", companyHandler.Get)
 	employerOnly.PUT("/company", companyHandler.Upsert)
@@ -214,7 +197,6 @@ func main() {
 	employerOnly.GET("/applications/:id", employerAppsHandler.Detail)
 	employerOnly.POST("/applications/:id/status", employerAppsHandler.UpdateStatus)
 
-	// Admin-only
 	adminOnly := protected.Group("/admin", appmw.RequireRole("admin"))
 	adminOnly.GET("/stats", adminStatsHandler.Stats)
 	adminOnly.GET("/jobs", adminJobsHandler.List)
@@ -231,5 +213,6 @@ func main() {
 		port = "8080"
 	}
 
+	slog.Info("server starting", "port", port)
 	e.Logger.Fatal(e.Start(":" + port))
 }

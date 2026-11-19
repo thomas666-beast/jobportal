@@ -20,11 +20,12 @@ type ChangePasswordRequest struct {
 }
 
 type MeHandler struct {
-	Queries *dbgen.Queries
+	Queries       *dbgen.Queries
+	RefreshTokens *service.RefreshTokenService
 }
 
-func NewMeHandler(q *dbgen.Queries) *MeHandler {
-	return &MeHandler{Queries: q}
+func NewMeHandler(q *dbgen.Queries, refreshSvc *service.RefreshTokenService) *MeHandler {
+	return &MeHandler{Queries: q, RefreshTokens: refreshSvc}
 }
 
 // ChangePassword handles POST /api/me/password
@@ -107,6 +108,14 @@ func (h *MeHandler) ChangePassword(c echo.Context) error {
 			"error": "failed to update password",
 		})
 	}
+
+	// Revoke all refresh tokens — forces re-login on all other devices.
+	h.RefreshTokens.RevokeAllForUser(c.Request().Context(), userID)
+
+	service.ClearAuthCookies(c)
+	return c.JSON(http.StatusOK, map[string]string{
+		"message": "password updated. Please log in again.",
+	})
 
 	return c.JSON(http.StatusOK, map[string]string{
 		"message": "password updated",

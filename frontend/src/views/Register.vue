@@ -43,15 +43,15 @@ const canSubmit = computed(
 async function handleSubmit() {
   errorMsg.value = ''
   loading.value = true
-
   try {
     await auth.register({
       username: username.value.trim(),
       email: email.value.trim(),
       password: password.value
     })
-    toast.success('Account created. Redirecting to login…')
-    setTimeout(() => router.push({ name: 'login' }), 800)
+    // Register auto-logs-in, so go straight to onboarding
+    toast.success('Account created!')
+    router.push({ name: 'onboarding' })
   } catch (err) {
     errorMsg.value = err.message
   } finally {

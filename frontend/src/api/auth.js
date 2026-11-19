@@ -25,3 +25,10 @@ export function setRole(role) {
     body: JSON.stringify({ role })
   })
 }
+
+export function logout() {
+  return apiFetch('/auth/logout', {
+    method: 'POST',
+    auth: true
+  })
+}

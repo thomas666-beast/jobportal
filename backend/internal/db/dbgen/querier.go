@@ -31,9 +31,13 @@ type Querier interface {
 	CreateAuthToken(ctx context.Context, arg CreateAuthTokenParams) (AuthToken, error)
 	CreateJob(ctx context.Context, arg CreateJobParams) (Job, error)
 	CreateNotification(ctx context.Context, arg CreateNotificationParams) (Notification, error)
+	CreateRefreshToken(ctx context.Context, arg CreateRefreshTokenParams) (RefreshToken, error)
 	CreateSavedSearch(ctx context.Context, arg CreateSavedSearchParams) (SavedSearch, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error)
+	DeleteAllRefreshTokensForUser(ctx context.Context, userID uuid.UUID) error
+	DeleteExpiredRefreshTokens(ctx context.Context) error
 	DeleteExpiredTokens(ctx context.Context) error
+	DeleteRefreshTokenByHash(ctx context.Context, tokenHash string) error
 	DeleteSavedSearch(ctx context.Context, arg DeleteSavedSearchParams) error
 	GetAdminApplicationByID(ctx context.Context, id uuid.UUID) (GetAdminApplicationByIDRow, error)
 	GetApplicationByID(ctx context.Context, id uuid.UUID) (Application, error)
@@ -47,6 +51,7 @@ type Querier interface {
 	GetJobWithCompanyByID(ctx context.Context, id uuid.UUID) (GetJobWithCompanyByIDRow, error)
 	GetPublishedJobByID(ctx context.Context, id uuid.UUID) (GetPublishedJobByIDRow, error)
 	GetRecentNotifications(ctx context.Context, userID uuid.UUID) ([]Notification, error)
+	GetRefreshTokenByHash(ctx context.Context, tokenHash string) (RefreshToken, error)
 	GetSavedSearchByID(ctx context.Context, id uuid.UUID) (SavedSearch, error)
 	GetSeekerProfile(ctx context.Context, userID uuid.UUID) (GetSeekerProfileRow, error)
 	GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error)

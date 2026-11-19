@@ -19,8 +19,8 @@ type Claims struct {
 }
 
 type JWTService struct {
-	secret []byte
-	expiry time.Duration
+	secret       []byte
+	accessExpiry time.Duration
 }
 
 func NewJWTService() *JWTService {
@@ -29,16 +29,16 @@ func NewJWTService() *JWTService {
 		panic("JWT_SECRET is not set")
 	}
 
-	hours := 24
-	if v := os.Getenv("JWT_EXPIRY_HOURS"); v != "" {
+	minutes := 15
+	if v := os.Getenv("JWT_ACCESS_EXPIRY_MINUTES"); v != "" {
 		if n, err := strconv.Atoi(v); err == nil && n > 0 {
-			hours = n
+			minutes = n
 		}
 	}
 
 	return &JWTService{
-		secret: []byte(secret),
-		expiry: time.Duration(hours) * time.Hour,
+		secret:       []byte(secret),
+		accessExpiry: time.Duration(minutes) * time.Minute,
 	}
 }
 
@@ -52,7 +52,7 @@ func (s *JWTService) Generate(userID uuid.UUID, username, role string, onboardin
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   userID.String(),
 			IssuedAt:  jwt.NewNumericDate(now),
-			ExpiresAt: jwt.NewNumericDate(now.Add(s.expiry)),
+			ExpiresAt: jwt.NewNumericDate(now.Add(s.accessExpiry)),
 		},
 	}
 

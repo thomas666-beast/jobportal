@@ -76,6 +76,14 @@ type Notification struct {
 	CreatedAt pgtype.Timestamptz `json:"created_at"`
 }
 
+type RefreshToken struct {
+	ID        uuid.UUID          `json:"id"`
+	UserID    uuid.UUID          `json:"user_id"`
+	TokenHash string             `json:"token_hash"`
+	ExpiresAt pgtype.Timestamptz `json:"expires_at"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+}
+
 type SavedJob struct {
 	SeekerID  uuid.UUID          `json:"seeker_id"`
 	JobID     uuid.UUID          `json:"job_id"`

@@ -2,14 +2,21 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
+import { useAuthStore } from './stores/auth'
 import { useThemeStore } from './stores/theme'
 import './style.css'
 
 const app = createApp(App)
-app.use(createPinia())
+const pinia = createPinia()
+
+app.use(pinia)
 app.use(router)
 
-// Initialize theme immediately before mount
+// Initialize theme
 useThemeStore().init()
 
-app.mount('#app')
+// Initialize auth, then mount
+const auth = useAuthStore()
+auth.init().then(() => {
+  app.mount('#app')
+})

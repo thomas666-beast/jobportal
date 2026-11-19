@@ -199,8 +199,20 @@ const router = createRouter({
   routes
 })
 
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
   const auth = useAuthStore()
+
+  // Wait for auth to finish checking cookies on first load
+  if (auth.loading) {
+    await new Promise((resolve) => {
+      const unwatch = setInterval(() => {
+        if (!auth.loading) {
+          clearInterval(unwatch)
+          resolve()
+        }
+      }, 50)
+    })
+  }
 
   // Landing shows to anonymous users; logged-in users go to dashboard.
   if (to.name === 'landing' && auth.isAuthenticated) {
@@ -211,6 +223,11 @@ router.beforeEach((to) => {
     return { name: 'login', query: { redirect: to.fullPath } }
   }
 
+  if (to.meta.guestOnly && auth.isAuthenticated) {
+    return { name: 'dashboard' }
+  }
+
+  // Force onboarding if not completed
   if (
     to.meta.requiresAuth &&
     to.name !== 'onboarding' &&
@@ -220,6 +237,7 @@ router.beforeEach((to) => {
     return { name: 'onboarding' }
   }
 
+  // Prevent visiting /onboarding once completed
   if (
     to.name === 'onboarding' &&
     auth.user &&
@@ -228,6 +246,7 @@ router.beforeEach((to) => {
     return { name: 'dashboard' }
   }
 
+  // Role check
   if (to.meta.roles && auth.user && !to.meta.roles.includes(auth.user.role)) {
     return { name: 'dashboard' }
   }
